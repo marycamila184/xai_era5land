@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# uv
+.uv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (stored on the external drive, never versioned)
+*.nc
+*.nc4
+*.grib
+*.zip
+data/
+
+# Models and outputs
+*.pkl
+*.joblib
+outputs/
+figures/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

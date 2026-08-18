@@ -1,0 +1,27 @@
+[project]
+name = "xai-era5land"
+version = "0.1.0"
+description = "ERA5-Land precipitation prediction with explainable ML"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { name = "Osmary Camila Bortoncello Glober" },
+    { name = "Vitor Gabriel Pignatari Israel Matias" },
+    { name = "Anderson Ara" },
+]
+dependencies = [
+    "xarray>=2024.1",
+    "netcdf4>=1.6",
+    "dask>=2024.1",
+    "numpy>=1.26",
+    "pandas>=2.1",
+]
+
+[dependency-groups]
+dev = [
+    "jupyterlab>=4.0",
+    "matplotlib>=3.8",
+]
+
+[tool.uv]
+package = false
