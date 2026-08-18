@@ -1,4 +1,4 @@
-# XAI - ERA5-Land — ERA5-Land Precipitation Prediction
+# ERA5-Land Precipitation Prediction with XAI
 
 Precipitation prediction from ERA5-Land reanalysis data, with a focus on
 explainable (XAI) modelling.
@@ -213,12 +213,6 @@ daily ones to `processed_daily/`.
 ```bash
 uv run python scripts/processing/daily_aggregation.py
 ```
-
-The full archive is ~597 GB, so a complete run takes a couple of hours. It is
-resumable — files that already exist are skipped, so the script can be stopped
-and restarted, and rebuilding a file just means deleting it first. The variables
-and years to process are the `GROUPS` and `YEARS` constants at the top of the
-script.
 
 **4. Explore and model.**
 
