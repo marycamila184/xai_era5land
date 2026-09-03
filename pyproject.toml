@@ -15,12 +15,13 @@ dependencies = [
     "dask>=2024.1",
     "numpy>=1.26",
     "pandas>=2.1",
+    "pyarrow>=15.0",
+    "matplotlib>=3.8",
 ]
 
 [dependency-groups]
 dev = [
     "jupyterlab>=4.0",
-    "matplotlib>=3.8",
 ]
 
 [tool.uv]

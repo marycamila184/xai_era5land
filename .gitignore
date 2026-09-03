@@ -22,7 +22,6 @@ data/
 *.pkl
 *.joblib
 outputs/
-figures/
 
 # OS / editor
 .DS_Store
