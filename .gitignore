@@ -27,3 +27,6 @@ outputs/
 .DS_Store
 .vscode/
 .idea/
+
+# Tests
+tests

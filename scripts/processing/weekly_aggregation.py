@@ -4,13 +4,19 @@
 Weeks are 7-day bins anchored to Monday (ISO weeks), labelled by their Monday
 and written one file per year -- a week belongs to the year of its Monday, so
 building a year also needs January of the next one. Accumulated variables
-(tp, pev, ssrd) are summed, instantaneous ones averaged. Weeks with fewer than
-7 daily values are dropped, so every weekly value covers a full week.
+(tp, pev, ssrd) are summed, instantaneous ones averaged; the wind carries its
+scalar mean speed and maximum through as well (scripts/utils/wind_stats.py).
+Weeks with fewer than 7 daily values are dropped, so every weekly value covers
+a full week.
 """
 
+import sys
 from pathlib import Path
 
 import xarray as xr
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from scripts.utils.wind_stats import weekly_wind  # noqa: E402
 
 DAILY = Path("/media/mary-camila/Expansion/era5land/processed_daily")
 OUT = Path("/media/mary-camila/Expansion/era5land/processed_weekly")
@@ -45,6 +51,8 @@ def aggregate(ds, group):
     # skipna=False keeps the ocean mask: an all-NaN cell stays NaN, not 0
     if group in ACCUMULATED:
         return weeks(ds).sum(skipna=False)
+    if group == "wind":
+        return weekly_wind(ds, weeks)
 
     out = weeks(ds).mean(skipna=False)
     if "t2m_min" in ds:

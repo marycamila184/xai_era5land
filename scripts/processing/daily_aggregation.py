@@ -3,13 +3,20 @@
 
 Accumulated variables (tp, pev, ssrd) reset at 01 UTC, so the daily total of
 day D is the value stamped 00 UTC of day D+1 (read from the next month's file
-when D is the last day of the month). Instantaneous variables are averaged.
+when D is the last day of the month). Instantaneous variables are averaged --
+except the wind, which also keeps the scalar mean and the daily maximum of the
+speed, since a vector mean alone hides a day of shifting direction. See
+scripts/utils/wind_stats.py.
 """
 
+import sys
 from pathlib import Path
 
 import numpy as np
 import xarray as xr
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from scripts.utils.wind_stats import daily_wind  # noqa: E402
 
 RAW = Path("/media/mary-camila/Expansion/era5land/raw")
 OUT = Path("/media/mary-camila/Expansion/era5land/processed_daily")
@@ -48,6 +55,14 @@ def daily_mean(ds):
     return out
 
 
+def aggregate(ds, group, year, month):
+    if group in ACCUMULATED:
+        return daily_total(ds, group, year, month)
+    if group == "wind":
+        return daily_wind(ds)
+    return daily_mean(ds)
+
+
 def process(group, year, month):
     path = OUT / group / f"{group}_{year}_{month:02d}.nc"
     if path.exists():
@@ -59,7 +74,7 @@ def process(group, year, month):
         return
 
     print(f"  {path.name}")
-    daily = daily_total(ds, group, year, month) if group in ACCUMULATED else daily_mean(ds)
+    daily = aggregate(ds, group, year, month)
 
     path.parent.mkdir(parents=True, exist_ok=True)
     encoding = {v: {"zlib": True, "complevel": 4, "dtype": "float32"} for v in daily.data_vars}
