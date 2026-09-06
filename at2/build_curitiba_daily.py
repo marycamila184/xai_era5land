@@ -31,7 +31,7 @@ WIND_CACHE = DATA / "wind_daily.parquet"  # the slow read; delete it to redo
 LAT, LON = -25.4284, -49.2733
 YEARS = range(1980, 2026)
 DAY_SECONDS = 86400
-BURN_IN = 366  # longest accumulation (365 days) plus the one day shift
+BURN_IN = 91  # longest accumulation (90 days) plus the one day shift
 
 
 def at_point(ds):
@@ -81,12 +81,6 @@ def read_hourly_wind():
     return wind
 
 
-def saturation_vapour_pressure(t_celsius):
-    """Magnus formula, hPa. On the dewpoint: vapour present. On the
-    temperature: the most the air could hold."""
-    return 6.112 * np.exp(17.67 * t_celsius / (t_celsius + 243.5))
-
-
 def past_sum(series, days):
     """Total over t-k to t-1. The shift is what keeps day t out."""
     return series.shift(1).rolling(days).sum()
@@ -94,7 +88,6 @@ def past_sum(series, days):
 
 def build():
     tp = read_daily("tp")
-    pev = read_daily("pev")
     ssrd = read_daily("ssrd")
     temp = read_daily("temp")
     wind = read_hourly_wind()
@@ -107,21 +100,15 @@ def build():
 
     # State of the atmosphere on the day each row describes, before any shift.
     state = pd.DataFrame(index=tp.index.copy())
-    state["pev_mm"] = pev.pev * 1000
     state["ssrd_wm2"] = ssrd.ssrd / DAY_SECONDS
     state["t2m"] = temp.t2m - 273.15
     state["t2m_min"] = temp.t2m_min - 273.15
     state["t2m_max"] = temp.t2m_max - 273.15
-    state["temp_range"] = state.t2m_max - state.t2m_min
     state["d2m"] = temp.d2m - 273.15
     state["dpd"] = state.t2m - state.d2m
-    state["e_hpa"] = saturation_vapour_pressure(state.d2m)
-    state["vpd"] = saturation_vapour_pressure(state.t2m) - state.e_hpa
 
     wind = wind.reindex(state.index)
     state["wind_speed"] = wind.wind_speed
-    # u10 and v10 are dropped: they are an exact function of the three columns
-    # below, and duplicated inputs split the attribution in SHAP.
     derived = derive_wind(wind.u10, wind.v10, wind.wind_speed)
     for name in ("wind_const", "wind_dir_sin", "wind_dir_cos"):
         state[name] = derived[name]
@@ -130,19 +117,18 @@ def build():
     df = state.shift(1)
     for k in (2, 3):
         df[f"dpd_lag{k}"] = state.dpd.shift(k)
-        df[f"e_lag{k}"] = state.e_hpa.shift(k)
+        df[f"d2m_lag{k}"] = state.d2m.shift(k)
 
     df.insert(0, "tp_mm", tp.tp * 1000)
     for k in (1, 2, 3):
         df[f"tp_lag{k}"] = df.tp_mm.shift(k)
-    for k in (7, 30, 90, 365):
+    for k in (7, 30, 90):
         df[f"tp_sum{k}"] = past_sum(df.tp_mm, k)
 
     doy = df.index.dayofyear
     df["day_sin"] = np.sin(2 * np.pi * doy / 365.25)
     df["day_cos"] = np.cos(2 * np.pi * doy / 365.25)
 
-    # The longest accumulation is undefined over the first year.
     return df.iloc[BURN_IN:].reset_index()
 
 
