@@ -89,7 +89,6 @@ Climatology over the record: **1556 mm a year**, wettest in January (220 mm), dr
 ## References
 
 - **EPA-454/R-99-005**, *Meteorological Monitoring Guidance for Regulatory Modeling Applications* (2000). [PDF](https://www.epa.gov/sites/default/files/2020-10/documents/mmgrma_0.pdf) — §6.2.1 for the scalar mean speed, §6.2.2 (eqs. 6.2.13–6.2.16) for the mean components and the resultant speed and direction.
-- **Singer, I. A. (1967).** *Steadiness of the Wind.* J. Appl. Meteor. 6(6), 1033–1038. [AMS](https://journals.ametsoc.org/view/journals/apme/6/6/1520-0450_1967_006_1033_sotw_2_0_co_2.xml) — the definition of constancy, mean vector wind over mean scalar wind. ⚠ Verified from the abstract only; confirm authorship and pages before quoting.
 - *Circular mean.* [Wikipedia](https://en.wikipedia.org/wiki/Circular_mean) — why a direction is carried as sine and cosine rather than degrees.
 - *Antecedent moisture.* [Wikipedia](https://en.wikipedia.org/wiki/Antecedent_moisture) — past rainfall as a proxy for how wet the ground already is, the job of `tp_sum7` … `tp_sum90`.
 - **INMET climatological normals.** [portal.inmet.gov.br/normais](https://portal.inmet.gov.br/normais) — the Curitiba monthly totals, to check the climatology above.
