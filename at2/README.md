@@ -38,7 +38,7 @@ df = pd.read_parquet("at2/data/curitiba_daily.parquet")
 
 ## Columns
 
-Target: **`tp_mm`**, day t's rainfall in mm. 22 features, no missing values; the record runs 1981-01-01 to 2025-12-30, 16,435 rows.
+Target: **`tp_mm`**, day t's rainfall in mm. 22 features, no missing values; the record runs 1980-04-01 to 2025-12-30, 16,710 rows.
 
 | Column | Unit | From | How it is computed |
 |---|---|---|---|
@@ -54,7 +54,7 @@ Target: **`tp_mm`**, day t's rainfall in mm. 22 features, no missing values; the
 | `wind_const` | 0–1 | t−1 | `√(ū²+v̄²) / wind_speed` |
 | `wind_dir_sin` | — | t−1 | `sin(θ)`, `θ = (270° − atan2(v̄, ū)) mod 360°` |
 | `wind_dir_cos` | — | t−1 | `cos(θ)`, same `θ` |
-| `day_sin`, `day_cos` | — | t | `sin`/`cos` of `2π × day_of_year / 365.25` |
+| `day_sin`, `day_cos` | — | t | `sin`/`cos` of `2π × (day_of_year − 1) / n`, `n` = 366 in a leap year else 365 — so 1 Jan sits at angle 0 and every year closes the circle exactly; a fixed 365.25 would drift the phase across the leap cycle |
 
 ### Humidity
 

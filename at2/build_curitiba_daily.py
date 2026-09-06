@@ -125,9 +125,12 @@ def build():
     for k in (7, 30, 90):
         df[f"tp_sum{k}"] = past_sum(df.tp_mm, k)
 
-    doy = df.index.dayofyear
-    df["day_sin"] = np.sin(2 * np.pi * doy / 365.25)
-    df["day_cos"] = np.cos(2 * np.pi * doy / 365.25)
+    # Divide by the length of the year the day is in, so every year closes the
+    # circle exactly. A fixed 365.25 drifts the phase across the leap cycle.
+    n_days = np.where(df.index.is_leap_year, 366, 365)
+    ang = 2 * np.pi * (df.index.dayofyear - 1) / n_days
+    df["day_sin"] = np.sin(ang).astype("float32")
+    df["day_cos"] = np.cos(ang).astype("float32")
 
     return df.iloc[BURN_IN:].reset_index()
 
