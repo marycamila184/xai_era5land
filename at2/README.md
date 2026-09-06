@@ -58,7 +58,7 @@ Target: **`tp_mm`**, day t's rainfall in mm. 22 features, no missing values; the
 
 ### Humidity
 
-`d2m` is the dewpoint, the temperature at which the air would saturate, so it measures the vapour actually present. `dpd` is how many degrees short of saturating the air is. A tree cannot subtract two of its own inputs, so the difference is given to it directly.
+`d2m` is the dewpoint, the temperature at which the air would saturate, so it measures the vapour actually present. `dpd` is how many degrees short of saturating the air is.
 
 ### Cloud
 
@@ -76,9 +76,8 @@ On a low-constancy day the direction is poorly defined. That is the point — `w
 
 ## What the table leaves out, and why
 
-- **Anything from day t.** Same-day cloud and temperature would be partly a *consequence* of the rain — `ssrd` is low because it rained — so the relationship would be learned backwards, as if darkness caused the storm.
+- **Anything from day t.** Same-day cloud and temperature would be partly a *consequence* of the rain.
 - **`u10` and `v10`.** They are an exact function of the wind columns above.
-- **Vapour pressure**, `es(d2m)` and `es(t2m) − es(d2m)`. The Magnus formula `es` is monotone, so `es(d2m)` orders the days exactly as `d2m` does and a tree splits it the same way: a duplicated input adds nothing and spreads one signal over two columns.
 - **`temp_range`**, `t2m_max − t2m_min`, since both parents are present.
 - **`pev`.** The potential evaporation closely mirrors `ssrd_wm2` and carries little about the target on its own.
 - **The first 91 days**, the burn-in `tp_sum90` needs plus the one-day shift.
@@ -86,8 +85,6 @@ On a low-constancy day the direction is poorly defined. That is the point — `w
 ## Does it look like Curitiba?
 
 Climatology over the record: **1556 mm a year**, wettest in January (220 mm), driest in August (82 mm), no genuinely dry season — the Cfb regime the city has. Worth checking against INMET's published normals before quoting numbers.
-
-Two facts that shape the modelling: **51% of days fall below 1 mm**, so the target is strongly zero-inflated and a plain regression will be dominated by dry days — `log1p`, or a two-stage occurrence-then-amount model, is the usual answer. And 2.6% of days pass 25 mm, which is where the interest lies. The wettest day on record here is 192.7 mm, 7 February 1996.
 
 ## References
 
