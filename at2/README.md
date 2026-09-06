@@ -42,7 +42,7 @@ uv run python -m at2.animate_month 2025-01  # ../figures/curitiba_map_2025_01.gi
 `animate_month` steps through the same month on the **full grid** around the
 city, so you can see the weather the point sits inside; it reads the gridded
 files, not the table, and draws the municipal boundary and state lines from
-[IBGE](https://servicodados.ibge.gov.br/api/docs/malhas) (downloaded once and
+[IBGE](https://servicodados.ibge.gov.br/api/docs/malhas?versao=3) (downloaded once and
 cached in `data/boundaries/`).
 
 A second argument sets the half-width of the map window in degrees, default 2:
@@ -166,39 +166,70 @@ weaker than it is.
 
 ## References
 
-**Wind**
+Every link opens without a login. Each entry says which part of the source is
+actually used here.
 
-- Singer, I. A. (1967). *Steadiness of the Wind.* Journal of Applied
-  Meteorology, 6(6), 1033–1038. Constancy is the mean vector wind over the mean
-  scalar wind: 1 when the direction never changes, 0 for a symmetric
-  distribution. That is `wind_const`.
+**Wind aggregation**
+
+- **EPA-454/R-99-005**, *Meteorological Monitoring Guidance for Regulatory
+  Modeling Applications* (2000).
+  [PDF](https://www.epa.gov/sites/default/files/2020-10/documents/mmgrma_0.pdf)
+  — **used: §6.2.1** for the scalar mean wind speed (`wind_speed`), and
+  **§6.2.2, equations 6.2.13–6.2.16** for the mean components `Ve`, `Vn`, the
+  resultant speed `URV = (Ve² + Vn²)^½` (the numerator of `wind_const`) and the
+  resultant direction `θRV` (what the sin/cos pair carries).
+  **Not used**: §6.2.4, the Mitsuta method — it averages the direction *angles*
+  with unwrapping, which we avoid by taking the direction of the resultant
+  vector; §6.2.7–6.2.9, the Yamartino and Mardia estimates of the direction's
+  standard deviation; and §6.2.17–6.2.19, the **unit-vector** average, whose
+  components drop the speed weighting. `wind_const` keeps that weighting, so an
+  hour of strong wind counts for more than an hour of breeze — the right choice
+  when the question is how much moisture moved.
+- **Singer, I. A. (1967).** *Steadiness of the Wind.* Journal of Applied
+  Meteorology, 6(6), 1033–1038.
   [AMS](https://journals.ametsoc.org/view/journals/apme/6/6/1520-0450_1967_006_1033_sotw_2_0_co_2.xml)
-- Klink, K. (1998). *Complementary Use of Scalar, Directional, and Vector
-  Statistics with an Application to Surface Winds.* The Professional
-  Geographer, 50(1), 3–13. Scalar, directional and vector wind statistics carry
-  non-redundant information — the case against the vector mean alone.
-  [ResearchGate](https://www.researchgate.net/publication/248937404)
-- The same ratio today, as *directional steadiness*:
-  [Frontiers in Marine Science (2025)](https://doi.org/10.3389/fmars.2025.1619142),
-  [Science of the Total Environment (2022)](https://www.sciencedirect.com/science/article/pii/S0048969722050562).
+  — **used: the definition of constancy**, the mean vector wind over the mean
+  scalar wind, 1 when the direction never changes and 0 for a symmetric
+  distribution. The EPA guidance defines the two averages but never names their
+  ratio; this paper does, so cite it for the name and the interpretation, not
+  for the formulas. ⚠ Verified from the abstract only — AMS blocks automated
+  access, so confirm the authorship, pages and wording on the page itself
+  before quoting.
+- **Frontiers in Marine Science (2025)**, *Role of wind stress directional
+  steadiness in modulating mesoscale air-sea interactions in the Western
+  Arabian Sea.* [doi](https://doi.org/10.3389/fmars.2025.1619142)
+  — **used: §2 Data and methods**, which builds the same ratio under the name
+  *directional steadiness*: "the ratio between the vector-averaged wind stress
+  and magnitude-averaged wind stress", running 0 to 1, near 1 for stable
+  unidirectional wind. Evidence the construction is in current use, though
+  applied to wind stress rather than wind.
+- *Vector vs. Scalar Averaging of Wind Data.*
+  [sodar.com](https://www.sodar.com/FYI/vector_vs_scalar.html) — **used: the
+  whole page**, a short plain-language version of the same distinction with
+  worked cases.
+- *Circular mean.*
+  [Wikipedia](https://en.wikipedia.org/wiki/Circular_mean) — **used: the
+  definition**, for why a direction is carried as sine and cosine rather than
+  degrees: the arithmetic mean of 359° and 1° is 180°, the wrong answer.
 
-**Moisture and rain in southern Brazil**
+**Other columns**
 
-- [The Atmospheric Water Cycle over South America](https://www.mdpi.com/2306-5338/12/12/316),
-  Hydrology (2025) — low-level moisture transport at 850–700 hPa feeds the
-  rainfall of southern and southeastern Brazil, Curitiba's regime.
-- [Projections of Atmospheric Moisture Transport Over South America](https://doi.org/10.1002/joc.70207),
-  Int. J. Climatol. (2026).
-
-**Antecedent rainfall** (`tp_sum*`)
-
-- [Optimality of antecedent precipitation index](https://www.sciencedirect.com/science/article/abs/pii/S0022169421000743),
-  Journal of Hydrology (2021) — a weighted sum of previous days' rain, used as
-  a soil-moisture proxy.
-- [Rainfall–runoff simulation using a normalized antecedent precipitation index](https://www.tandfonline.com/doi/full/10.1080/02626660903546175),
-  Hydrological Sciences Journal (2010).
+- *Antecedent moisture.*
+  [Wikipedia](https://en.wikipedia.org/wiki/Antecedent_moisture) — **used: the
+  antecedent precipitation index section**, past rainfall as a proxy for how
+  wet the ground already is, which is the job of `tp_sum7` … `tp_sum365`.
+- *Vapour-pressure deficit.*
+  [Wikipedia](https://en.wikipedia.org/wiki/Vapour-pressure_deficit) — **used:
+  the definition**, `es(t2m) − es(d2m)`, and why it differs from the dewpoint
+  depression.
+- **INMET climatological normals.**
+  [portal.inmet.gov.br/normais](https://portal.inmet.gov.br/normais) — **used:
+  the Curitiba monthly totals**, to check the climatology above against
+  observations.
+- **IBGE mesh API.**
+  [Documentation](https://servicodados.ibge.gov.br/api/docs/malhas?versao=3) —
+  **used: the `municipios` and `estados` endpoints**, the boundaries
+  `animate_month` draws.
 
 ERA5-Land source and accumulation conventions: see the
 [main README](../README.md#source-and-citation).
-
-> Check authorship and pagination on the publisher's page before citing these.
