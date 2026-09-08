@@ -5,8 +5,8 @@ Three maps side by side -- rain, temperature, wind -- one frame per day, with
 the grid cell the table is built from marked. Unlike the table, this reads the
 full grid, so it shows the weather the point sits inside.
 
-    uv run python -m at2.animate_month 2025-01
-    uv run python -m at2.animate_month 2025-01 0.6    # tighter window
+    uv run python -m at2.plot.animate_month 2025-01
+    uv run python -m at2.plot.animate_month 2025-01 0.6    # tighter window
 
 The second argument is the half-width of the window in degrees. Curitiba's
 municipal boundary spans about 0.2 x 0.3 deg and the grid is 0.1 deg, so the
@@ -22,12 +22,12 @@ import xarray as xr
 from matplotlib.animation import FuncAnimation, PillowWriter
 from matplotlib.colors import BoundaryNorm, LinearSegmentedColormap
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from at2 import boundaries  # noqa: E402
 from at2.build_curitiba_daily import LAT, LON, RAW, DAILY  # noqa: E402
 from scripts.utils.wind_stats import daily_wind  # noqa: E402
 
-FIGURES = Path(__file__).resolve().parents[1] / "figures"
+FIGURES = Path(__file__).resolve().parents[2] / "figures"
 HALF_SPAN = 2.0  # default degrees either side of the point
 
 INK, MUTED, SURFACE = "#0b0b0b", "#52514e", "#fcfcfb"

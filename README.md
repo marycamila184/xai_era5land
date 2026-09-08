@@ -255,8 +255,8 @@ rm -r /media/mary-camila/Expansion/era5land/processed_weekly/wind
 
 ```bash
 uv run python -m at2.build_curitiba_daily
-uv run python -m at2.plot_month 2025-01
-uv run python -m at2.animate_month 2025-01
+uv run python -m at2.plot.plot_month 2025-01
+uv run python -m at2.plot.animate_month 2025-01
 ```
 
 **4. Run the tests.**

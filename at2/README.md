@@ -17,14 +17,14 @@ Wind statistics come from [`scripts/utils/wind_stats.py`](../scripts/utils/wind_
 ```bash
 uv sync --group dev
 uv run python -m at2.build_curitiba_daily   # data/curitiba_daily.parquet
-uv run python -m at2.plot_month 2025-01     # ../figures/curitiba_2025_01.png
-uv run python -m at2.animate_month 2025-01  # ../figures/curitiba_map_2025_01.gif
+uv run python -m at2.plot.plot_month 2025-01     # ../figures/curitiba_2025_01.png
+uv run python -m at2.plot.animate_month 2025-01  # ../figures/curitiba_map_2025_01.gif
 ```
 
 `plot_month` draws one month of the table itself. `animate_month` steps through the same month on the **full grid** around the city, reading the gridded files rather than the table, with the municipal boundary and state lines from [IBGE](https://servicodados.ibge.gov.br/api/docs/malhas?versao=3) cached in `data/boundaries/`. A second argument sets the half-width of the map window in degrees, default 2:
 
 ```bash
-uv run python -m at2.animate_month 2025-01 0.6   # metropolitan zoom
+uv run python -m at2.plot.animate_month 2025-01 0.6   # metropolitan zoom
 ```
 
 The grid is 0.1° and Curitiba spans about 0.2° × 0.3°, so below ~0.5° there is no spatial variation left to see.

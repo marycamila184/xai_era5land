@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Plot one month of the Curitiba table: rain, temperature and wind.
 
-    uv run python -m at2.plot_month 2025-01
+    uv run python -m at2.plot.plot_month 2025-01
 """
 
 import sys
@@ -13,8 +13,8 @@ import numpy as np
 import pandas as pd
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 
-TABLE = Path(__file__).resolve().parent / "data" / "curitiba_daily.parquet"
-FIGURES = Path(__file__).resolve().parents[1] / "figures"
+TABLE = Path(__file__).resolve().parents[1] / "data" / "curitiba_daily.parquet"
+FIGURES = Path(__file__).resolve().parents[2] / "figures"
 
 RAIN = "#2a78d6"
 TEMP = "#eb6834"
