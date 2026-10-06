@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 
-TABLE = Path(__file__).resolve().parents[1] / "data" / "curitiba_daily.parquet"
+TABLE = Path(__file__).resolve().parents[2] / "commons" / "data" / "curitiba_daily.parquet"
 FIGURES = Path(__file__).resolve().parents[2] / "figures"
 
 RAIN = "#2a78d6"

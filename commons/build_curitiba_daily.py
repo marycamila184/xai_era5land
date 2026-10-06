@@ -8,7 +8,7 @@ carries the scalar mean speed and the constancy, not just the vector mean.
 Lags and accumulations cover days t-k to t-1, never day t, which would put the
 target inside the feature.
 
-Run from the repository root:  uv run python -m at2.build_curitiba_daily
+Run from the repository root:  uv run python -m commons.build_curitiba_daily
 """
 
 import sys

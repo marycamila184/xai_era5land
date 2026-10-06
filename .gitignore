@@ -30,3 +30,9 @@ outputs/
 
 # Tests
 tests
+
+# Tabela exportada da AT3 (dados, gerada por at3/exportar_para_classificacao.py)
+at3/export/
+
+# Relatório da AT3: a versão de trabalho fica no Overleaf
+at3/relatorio/

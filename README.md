@@ -191,16 +191,28 @@ over Curitiba, one row per UTC day, set up as a t+1 forecast — the target is
 day t's rain and every predictor comes from t−1 or earlier. It has its own
 [README](at2/README.md) with the column dictionary and the references.
 
+AT3, in [at3/](at3/), filters the same table to heavy-rain days (≥ 10 mm), fits a
+regression and a classification tree and explains both with CP, ICE, LIME and
+SHAP; see its [README](at3/README.md). The table and the scripts that build it
+are shared by both activities and live in [commons/](commons/).
+
 ## Repository layout
 
 ```
 .
-├── at2/                     Curitiba daily table (XAI coursework)
-│   ├── build_curitiba_daily.py
-│   ├── plot_month.py        one month of the table, three panels
-│   ├── animate_month.py     the same month as maps around the city
-│   ├── data/                curitiba_daily.parquet
+├── commons/                 shared by the XAI activities (AT2 and AT3)
+│   ├── build_curitiba_daily.py      the Curitiba daily table
+│   ├── synoptic.py, subdaily.py, bands.py   extra columns for AT3
+│   ├── boundaries.py                IBGE municipal/state outlines
+│   └── data/                curitiba_daily.parquet and the extra tables
+├── at2/                     Curitiba daily table (XAI coursework, AT2)
+│   ├── analysis/            atv2_arvore.ipynb
+│   ├── plot/                plot_month.py, animate_month.py
 │   └── README.md
+├── at3/                     heavy rain: regression, classification, local XAI
+│   ├── analysis/            notebooks, figures, saved models
+│   ├── relatorio/           report (LaTeX, SBC template)
+│   └── evaluation.py        date folds and baselines for the filtered table
 ├── figures/                 maps and animations, versioned
 ├── notebooks/               exploration, modelling and XAI notebooks
 ├── scripts/
@@ -254,7 +266,7 @@ rm -r /media/mary-camila/Expansion/era5land/processed_weekly/wind
 **3. Build the Curitiba table.**
 
 ```bash
-uv run python -m at2.build_curitiba_daily
+uv run python -m commons.build_curitiba_daily
 uv run python -m at2.plot.plot_month 2025-01
 uv run python -m at2.plot.animate_month 2025-01
 ```
@@ -281,14 +293,14 @@ tp = xr.open_mfdataset(
     "/media/mary-camila/Expansion/era5land/processed_daily/tp/tp_*.nc"
 ).tp * 1000  # mm/day
 
-curitiba = pd.read_parquet("at2/data/curitiba_daily.parquet")
+curitiba = pd.read_parquet("commons/data/curitiba_daily.parquet")
 ```
 
 ## Notes
 
-Data is not versioned in git — that includes `at2/data/curitiba_daily.parquet`,
+Data is not versioned in git — that includes `commons/data/curitiba_daily.parquet`,
 which `.gitignore` excludes through the `data/` rule. It is 2.9 MB and rebuilds
-in a few minutes; add `!at2/data/` to `.gitignore` if the coursework should
+in a few minutes; add `!commons/data/` to `.gitignore` if the coursework should
 carry the table with it. `tests/` is also excluded.
 
 ## Source and citation

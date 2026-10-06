@@ -23,8 +23,8 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 from matplotlib.colors import BoundaryNorm, LinearSegmentedColormap
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from at2 import boundaries  # noqa: E402
-from at2.build_curitiba_daily import LAT, LON, RAW, DAILY  # noqa: E402
+from commons import boundaries  # noqa: E402
+from commons.build_curitiba_daily import LAT, LON, RAW, DAILY  # noqa: E402
 from scripts.utils.wind_stats import daily_wind  # noqa: E402
 
 FIGURES = Path(__file__).resolve().parents[2] / "figures"
