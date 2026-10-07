@@ -192,8 +192,9 @@ day t's rain and every predictor comes from t−1 or earlier. It has its own
 [README](at2/README.md) with the column dictionary and the references.
 
 AT3, in [at3/](at3/), filters the same table to heavy-rain days (≥ 10 mm), fits a
-regression and a classification tree and explains both with CP, ICE, LIME and
-SHAP; see its [README](at3/README.md). The table and the scripts that build it
+quantile gradient boosting model for the 90th percentile of the day's rain and
+explains it with CP, ICE, LIME and SHAP (the classification part is built
+separately); see its [README](at3/README.md). The table and the scripts that build it
 are shared by both activities and live in [commons/](commons/).
 
 ## Repository layout
@@ -321,4 +322,4 @@ listed under [Raw data](#raw-data).
 - Wind aggregation: Singer, I. A., *Steadiness of the Wind*, J. Appl. Meteor.,
   6, 1033–1038, 1967; Klink, K., *Complementary Use of Scalar, Directional, and
   Vector Statistics with an Application to Surface Winds*, The Professional
-  Geographer, 50(1), 3–13, 1998. Full list in [at2/README.md](at2/README.md#references).
+  Geographer, 50(1), 3–13, 1998. Full list in [at2/README.md](at2/README.md#referências).

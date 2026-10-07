@@ -1,18 +1,18 @@
-# AT2 — Daily precipitation table for Curitiba (ERA5-Land)
+# AT2, tabela diária de precipitação para Curitiba (ERA5-Land)
 
-Coursework for the XAI class. One row per day, one grid cell, built to forecast tomorrow's rain in Curitiba and then explain the model.
+Trabalho da disciplina de XAI. Uma linha por dia, uma célula da grade, montada para prever a chuva de amanhã em Curitiba e depois explicar o modelo.
 
-Wind statistics come from [`scripts/utils/wind_stats.py`](../scripts/utils/wind_stats.py) at the repository root, the same code the main pipeline uses.
+As estatísticas de vento vêm de [`scripts/utils/wind_stats.py`](../scripts/utils/wind_stats.py), na raiz do repositório, o mesmo código que o pipeline principal usa.
 
-## The setup
+## O problema
 
-**Point** — the ERA5-Land cell nearest Praça Tiradentes (−25.4284, −49.2733), which lands on **−25.4, −49.3**. A cell is ~9 km across, so it is already a model average over ~81 km², centred on the city. Six cells cover Curitiba; averaging them damps the extremes, which are the cases a rainfall model exists for. The series represents the centre and runs slightly drier than the municipality as a whole.
+**Ponto.** A célula do ERA5-Land mais próxima da Praça Tiradentes (−25,4284, −49,2733), que cai em **−25,4, −49,3**. Uma célula tem cerca de 9 km de lado, então já é uma média do modelo sobre cerca de 81 km², centrada na cidade. Seis células cobrem Curitiba, e fazer a média delas suavizaria os extremos, que são justamente os casos para os quais um modelo de chuva existe. A série representa o centro e é um pouco mais seca que o município como um todo.
 
-**Day** — the UTC day. In Curitiba (UTC−3) day D runs from 21:00 local on D−1. A late-afternoon storm lands on the right day; rain after midnight falls into the previous one. Worth remembering when comparing against INMET stations, which use the local civil day.
+**Dia.** O dia UTC. Em Curitiba (UTC−3), o dia D começa às 21:00 locais de D−1. Uma tempestade no fim da tarde cai no dia certo; a chuva depois da meia-noite cai no dia anterior. Vale lembrar disso ao comparar com as estações do INMET, que usam o dia civil local.
 
-**Timing** — `tp_mm` is the only column from day t. Everything else describes **t−1 or earlier**, so the table is an honest t+1 forecast: nothing in a row was unknowable when the forecast would have been made. `_lagk` means day t−k.
+**Tempo das variáveis.** `tp_mm` é a única coluna do dia t. Todo o resto descreve **t−1 ou antes**, então a tabela é uma previsão honesta de t+1: nada em uma linha seria desconhecido no momento em que a previsão seria feita. `_lagk` quer dizer o dia t−k.
 
-## Build
+## Como construir
 
 ```bash
 uv sync --group dev
@@ -21,77 +21,77 @@ uv run python -m at2.plot.plot_month 2025-01     # ../figures/curitiba_2025_01.p
 uv run python -m at2.plot.animate_month 2025-01  # ../figures/curitiba_map_2025_01.gif
 ```
 
-`plot_month` draws one month of the table itself. `animate_month` steps through the same month on the **full grid** around the city, reading the gridded files rather than the table, with the municipal boundary and state lines from [IBGE](https://servicodados.ibge.gov.br/api/docs/malhas?versao=3) cached in `commons/data/boundaries/`. A second argument sets the half-width of the map window in degrees, default 2:
+O `plot_month` desenha um mês da própria tabela. O `animate_month` percorre o mesmo mês na **grade completa** em volta da cidade, lendo os arquivos em grade e não a tabela, com o limite do município e das divisas estaduais do [IBGE](https://servicodados.ibge.gov.br/api/docs/malhas?versao=3), guardados em `commons/data/boundaries/`. Um segundo argumento define a meia-largura da janela do mapa em graus, 2 por padrão:
 
 ```bash
-uv run python -m at2.plot.animate_month 2025-01 0.6   # metropolitan zoom
+uv run python -m at2.plot.animate_month 2025-01 0.6   # zoom na região metropolitana
 ```
 
-The grid is 0.1° and Curitiba spans about 0.2° × 0.3°, so below ~0.5° there is no spatial variation left to see.
+A grade é de 0,1° e Curitiba ocupa cerca de 0,2° × 0,3°, então abaixo de uns 0,5° não sobra variação espacial para ver.
 
-The wind is read from the hourly raw files, which is slow, so it is cached in `commons/data/wind_daily.parquet` — delete that file to redo it. Everything else comes from `processed_daily/`.
+O vento é lido dos arquivos horários brutos, o que é lento, então ele fica guardado em `commons/data/wind_daily.parquet`. Apague esse arquivo para refazer. Todo o resto vem de `processed_daily/`.
 
 ```python
 import pandas as pd
 df = pd.read_parquet("commons/data/curitiba_daily.parquet")
 ```
 
-## Columns
+## Colunas
 
-Target: **`tp_mm`**, day t's rainfall in mm. 22 features, no missing values; the record runs 1980-04-01 to 2025-12-30, 16,710 rows.
+Alvo: **`tp_mm`**, a chuva do dia t em mm. São 22 variáveis, sem valores faltando; o registro vai de 01/04/1980 a 30/12/2025, 16.710 linhas.
 
-| Column | Unit | From | How it is computed |
+| Coluna | Unidade | De quando | Como é calculada |
 |---|---|---|---|
-| `date` | — | t | the UTC day being forecast; not a model input |
-| **`tp_mm`** | mm | **t** | ERA5 `tp` × 1000 — **the target** |
-| `tp_lag1..3` | mm | t−1..3 | `tp_mm` shifted 1, 2, 3 days |
+| `date` | | t | o dia UTC previsto; não entra no modelo |
+| **`tp_mm`** | mm | **t** | `tp` do ERA5 × 1000, **o alvo** |
+| `tp_lag1..3` | mm | t−1..3 | `tp_mm` deslocado 1, 2 e 3 dias |
 | `tp_sum7/30/90` | mm | t−k..t−1 | `tp_mm.shift(1).rolling(k).sum()` |
-| `t2m`, `t2m_min`, `t2m_max` | °C | t−1 | ERA5 `t2m` − 273.15 (daily mean, min, max) |
-| `d2m`, `d2m_lag2`, `d2m_lag3` | °C | t−1..3 | ERA5 `d2m` − 273.15, the dewpoint |
+| `t2m`, `t2m_min`, `t2m_max` | °C | t−1 | `t2m` do ERA5 − 273,15 (média, mínima e máxima do dia) |
+| `d2m`, `d2m_lag2`, `d2m_lag3` | °C | t−1..3 | `d2m` do ERA5 − 273,15, o ponto de orvalho |
 | `dpd`, `dpd_lag2`, `dpd_lag3` | °C | t−1..3 | `t2m − d2m` |
-| `ssrd_wm2` | W m⁻² | t−1 | ERA5 `ssrd` ÷ 86400 |
-| `wind_speed` | m s⁻¹ | t−1 | `mean(√(u²+v²))` over the 24 hourly steps |
+| `ssrd_wm2` | W m⁻² | t−1 | `ssrd` do ERA5 ÷ 86400 |
+| `wind_speed` | m s⁻¹ | t−1 | `mean(√(u²+v²))` nos 24 passos horários |
 | `wind_const` | 0–1 | t−1 | `√(ū²+v̄²) / wind_speed` |
-| `wind_dir_sin` | — | t−1 | `sin(θ)`, `θ = (270° − atan2(v̄, ū)) mod 360°` |
-| `wind_dir_cos` | — | t−1 | `cos(θ)`, same `θ` |
-| `day_sin`, `day_cos` | — | t | `sin`/`cos` of `2π × (day_of_year − 1) / n`, `n` = 366 in a leap year else 365 — so 1 Jan sits at angle 0 and every year closes the circle exactly; a fixed 365.25 would drift the phase across the leap cycle |
+| `wind_dir_sin` | | t−1 | `sin(θ)`, `θ = (270° − atan2(v̄, ū)) mod 360°` |
+| `wind_dir_cos` | | t−1 | `cos(θ)`, mesmo `θ` |
+| `day_sin`, `day_cos` | | t | `sin` e `cos` de `2π × (dia_do_ano − 1) / n`, com `n` = 366 em ano bissexto e 365 nos outros. Assim 1º de janeiro fica no ângulo 0 e todo ano fecha o círculo exatamente; um 365,25 fixo deslocaria a fase ao longo do ciclo bissexto |
 
-### Humidity
+### Umidade
 
-`d2m` is the dewpoint, the temperature at which the air would saturate, so it measures the vapour actually present. `dpd` is how many degrees short of saturating the air is.
+`d2m` é o ponto de orvalho, a temperatura em que o ar saturaria, então mede o vapor de fato presente. `dpd` é quantos graus faltam para o ar saturar.
 
-### Cloud
+### Nebulosidade
 
-`ssrd` is stored as accumulated energy (J m⁻²). Dividing by the accumulation window in seconds turns it into mean power, W m⁻²; a UTC day is 86400 s. This makes daily and weekly values comparable and lets the number be read against the solar constant, ~1361 W m⁻². Dividing by a fixed 3600 is the usual mistake and gives about five times that.
+`ssrd` é guardado como energia acumulada (J m⁻²). Dividir pela janela de acumulação em segundos transforma em potência média, W m⁻²; um dia UTC tem 86400 s. Isso deixa valores diários e semanais comparáveis e permite ler o número contra a constante solar, cerca de 1361 W m⁻². Dividir por um 3600 fixo é o erro comum e dá cerca de cinco vezes esse valor.
 
-### Wind
+### Vento
 
-A daily mean of `u10`/`v10` is a **vector** mean, and it misleads on exactly the interesting days. Twelve hours of westerly at 4 m s⁻¹ followed by twelve hours of easterly at 4 m s⁻¹ average to zero: the model reads "no wind" when the wind blew all day and swung around — which is what a front looks like. So the table carries the **scalar** mean beside the vector one, and their ratio:
+Uma média diária de `u10`/`v10` é uma média **vetorial**, e ela engana exatamente nos dias interessantes. Doze horas de vento oeste a 4 m s⁻¹ seguidas de doze horas de vento leste a 4 m s⁻¹ dão média zero, e o modelo lê "sem vento" quando o vento soprou o dia todo e mudou de direção, que é como uma frente se parece. Por isso a tabela traz a média **escalar** ao lado da vetorial, e a razão entre elas:
 
-- **`wind_speed`** — how hard it blew.
-- **`wind_const`** — how steady the direction was. 1 means one bearing all day, real advection of moisture; near 0 means it cancelled itself out. The scalar mean is never below the vector one, so the ratio sits in [0, 1].
-- **`wind_dir_sin` / `wind_dir_cos`** — where it came from. In degrees the direction jumps from 359 to 0, putting two nearly identical winds at opposite ends of the scale; the sine/cosine pair has no such seam. The convention is meteorological: the bearing the wind blows **from**.
+- **`wind_speed`**, quão forte soprou.
+- **`wind_const`**, quão constante foi a direção. 1 quer dizer uma direção só o dia todo, transporte real de umidade; perto de 0 quer dizer que o vento se anulou. A média escalar nunca fica abaixo da vetorial, então a razão fica em [0, 1].
+- **`wind_dir_sin` / `wind_dir_cos`**, de onde veio. Em graus, a direção salta de 359 para 0 e coloca dois ventos quase iguais em pontas opostas da escala; o par seno e cosseno não tem essa emenda. A convenção é a meteorológica, a direção **de onde** o vento sopra.
 
-On a low-constancy day the direction is poorly defined. That is the point — `wind_const` tells the model how much the direction is worth.
+Num dia de constância baixa, a direção é mal definida. É exatamente esse o ponto: `wind_const` diz ao modelo quanto a direção vale.
 
-## What the table leaves out, and why
+## O que a tabela deixa de fora, e por quê
 
-- **Anything from day t.** Same-day cloud and temperature would be partly a *consequence* of the rain.
-- **`u10` and `v10`.** They are an exact function of the wind columns above.
-- **`temp_range`**, `t2m_max − t2m_min`, since both parents are present.
-- **`pev`.** The potential evaporation closely mirrors `ssrd_wm2` and carries little about the target on its own.
-- **The first 91 days**, the burn-in `tp_sum90` needs plus the one-day shift.
+- **Qualquer coisa do dia t.** Nebulosidade e temperatura do mesmo dia seriam em parte *consequência* da chuva.
+- **`u10` e `v10`.** São uma função exata das colunas de vento acima.
+- **`temp_range`**, `t2m_max − t2m_min`, já que as duas colunas de origem estão na tabela.
+- **`pev`.** A evaporação potencial acompanha de perto o `ssrd_wm2` e sozinha diz pouco sobre o alvo.
+- **Os primeiros 91 dias**, o aquecimento que o `tp_sum90` precisa mais o deslocamento de um dia.
 
-## Does it look like Curitiba?
+## Parece Curitiba?
 
-Climatology over the record: **1556 mm a year**, wettest in January (220 mm), driest in August (82 mm), no genuinely dry season — the Cfb regime the city has. Worth checking against INMET's published normals before quoting numbers.
+Climatologia do registro: **1556 mm por ano**, mais chuvoso em janeiro (220 mm), mais seco em agosto (82 mm), sem estação seca de verdade, o regime Cfb da cidade. Vale conferir com as normais publicadas pelo INMET antes de citar os números.
 
-## References
+## Referências
 
-- **EPA-454/R-99-005**, *Meteorological Monitoring Guidance for Regulatory Modeling Applications* (2000). [PDF](https://www.epa.gov/sites/default/files/2020-10/documents/mmgrma_0.pdf) — §6.2.1 for the scalar mean speed, §6.2.2 (eqs. 6.2.13–6.2.16) for the mean components and the resultant speed and direction.
-- *Circular mean.* [Wikipedia](https://en.wikipedia.org/wiki/Circular_mean) — why a direction is carried as sine and cosine rather than degrees.
-- *Antecedent moisture.* [Wikipedia](https://en.wikipedia.org/wiki/Antecedent_moisture) — past rainfall as a proxy for how wet the ground already is, the job of `tp_sum7` … `tp_sum90`.
-- **INMET climatological normals.** [portal.inmet.gov.br/normais](https://portal.inmet.gov.br/normais) — the Curitiba monthly totals, to check the climatology above.
-- **IBGE mesh API.** [Documentation](https://servicodados.ibge.gov.br/api/docs/malhas?versao=3) — the `municipios` and `estados` endpoints `animate_month` draws.
+- **EPA-454/R-99-005**, *Meteorological Monitoring Guidance for Regulatory Modeling Applications* (2000). [PDF](https://www.epa.gov/sites/default/files/2020-10/documents/mmgrma_0.pdf). §6.2.1 para a velocidade média escalar, §6.2.2 (eqs. 6.2.13–6.2.16) para as componentes médias e a velocidade e direção resultantes.
+- *Circular mean.* [Wikipedia](https://en.wikipedia.org/wiki/Circular_mean), por que uma direção é guardada como seno e cosseno e não em graus.
+- *Antecedent moisture.* [Wikipedia](https://en.wikipedia.org/wiki/Antecedent_moisture), a chuva passada como indicador de quão úmido o solo já está, o papel de `tp_sum7` … `tp_sum90`.
+- **Normais climatológicas do INMET.** [portal.inmet.gov.br/normais](https://portal.inmet.gov.br/normais), os totais mensais de Curitiba, para conferir a climatologia acima.
+- **API de malhas do IBGE.** [Documentação](https://servicodados.ibge.gov.br/api/docs/malhas?versao=3), os endpoints `municipios` e `estados` que o `animate_month` desenha.
 
-ERA5-Land source and accumulation conventions: see the [main README](../README.md#source-and-citation).
+Fonte do ERA5-Land e convenções de acumulação: veja o [README principal](../README.md#source-and-citation).
